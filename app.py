@@ -20,7 +20,9 @@ def create_user_table():
             username VARCHAR(255) NOT NULL,
             age INT,
             city VARCHAR(255),
-            salary INT
+            basic_salary INT,
+            hra INT,
+            total_salary INT
         )
     ''')
     db.commit()
@@ -46,16 +48,16 @@ def create_user():
         username = request.form['username']
         age = request.form['age']
         city = request.form['city']
-        salary = request.form['salary']
+        total_salary = request.form['total_salary']
+        hra_perc = 0.4
+        total_salary = int(total_salary)
 
-        salary = int(salary)
-
-        hra = 0.4
-        total_salary = salary * hra
+        hra = total_salary * hra_perc
+        basic_salary = total_salary - hra
 
         cursor = db.cursor()
-        cursor.execute('INSERT INTO employee (username, age, city, salary) VALUES (%s, %s, %s, %s)',
-                       (username, age, city, total_salary))
+        cursor.execute('INSERT INTO employee (username, age, city, basic_salary, hra, total_salary) VALUES (%s, %s, %s, %s, %s, %s)',
+                       (username, age, city, basic_salary, hra, total_salary))
         db.commit()
 
         return redirect(url_for('create_user'))

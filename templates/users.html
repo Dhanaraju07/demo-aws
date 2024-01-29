@@ -24,6 +24,8 @@
           <th scope="col">Age</th>
           <th scope="col">City</th>
           <th scope="col">Basic Salary</th>
+          <th scope="col">HRA</th>
+          <th scope="col">Total Salary</th>
           <th scope="col">Delete</th>
         </tr>
       </thead>
@@ -32,9 +34,11 @@
         <tr>
           <td>{{ user[0] }}</td>
           <td>{{ user[1] }}</td>
-          <td>{% if user[2] is not none %}{{ user[2] }}{% endif %}</td>
+          <td>{{ user[2] }}</td>
           <td>{{ user[3] }}</td>
           <td>{{user[4]}}</td>
+          <td>{{user[5]}}</td>
+          <td>{{user[6]}}</td>
           <td>
             <a href="/delete_user/{{ user[0] }}">Delete</a>
         </td>
