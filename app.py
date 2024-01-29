@@ -1,12 +1,10 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, redirect, url_for
 
 app = Flask(__name__)
 
-import rds_db as db
-
 import pymysql
 
-conn = pymysql.connect(
+db = pymysql.connect(
     host="mysqldb.cd2pfftf5k62.us-east-2.rds.amazonaws.com",
     port=3306,
     user="admin",
@@ -14,26 +12,67 @@ conn = pymysql.connect(
     db="mysqldb"
 )
 
+def create_user_table():
+    cursor = db.cursor()
+    cursor.execute('''
+        CREATE TABLE IF NOT EXISTS employee (
+            id INT AUTO_INCREMENT PRIMARY KEY,
+            username VARCHAR(255) NOT NULL,
+            age INT,
+            city VARCHAR(255),
+            salary INT
+        )
+    ''')
+    db.commit()
+
+create_user_table()
+
+
+
 @app.route('/')
 def home():
     return render_template('home.html')
 
 @app.route('/users')
-def get_users_data():
-    details = db.get_details()
-    return render_template('users.html', users=details)
+def users():
+    cursor = db.cursor()
+    cursor.execute('SELECT * FROM employee')
+    users = cursor.fetchall()
+    return render_template('users.html', users=users)
 
 @app.route('/create_user', methods=['GET', 'POST'])
-def create():
+def create_user():
     if request.method == 'POST':
-        name = request.form['username']
+        username = request.form['username']
         age = request.form['age']
         city = request.form['city']
-        db.insert_details(name, age, city)
-        details = db.get_details()
-        return render_template('create_user.html', var=details[-1])
-    else:
-        return render_template('create_user.html')
+        salary = request.form['salary']
 
-if __name__ == "__main__":
+        salary = int(salary)
+
+        hra = 0.4
+        total_salary = salary * hra
+
+        cursor = db.cursor()
+        cursor.execute('INSERT INTO employee (username, age, city, salary) VALUES (%s, %s, %s, %s)',
+                       (username, age, city, total_salary))
+        db.commit()
+
+        return redirect(url_for('create_user'))
+
+    return render_template('create_user.html')
+
+@app.route('/delete_user/<int:id>')
+def delete_user(id):
+    cursor = db.cursor()
+    cursor.execute('DELETE FROM employee WHERE id = %s', (id,))
+    db.commit()
+
+    cursor.execute('ALTER TABLE employee AUTO_INCREMENT = 1;')
+    db.commit()
+
+    return redirect(url_for('users'))
+
+if __name__ == '__main__':
     app.run(debug=True)
+
