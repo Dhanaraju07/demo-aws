@@ -29,8 +29,6 @@ def create_user_table():
 
 create_user_table()
 
-
-
 @app.route('/')
 def home():
     return render_template('home.html')
